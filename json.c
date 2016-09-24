@@ -49,9 +49,9 @@ void expect_c(FILE* json, int d) {
 double next_number(FILE* json) {
     double val;
     fscanf(json, "%lf", &val);
-    // TODO: Error checking
     if (val == 0 || val == EOF) {
-        fprintf(stderr, "Error: Expected a number: %d\n", line
+        fprintf(stderr, "Error: Expected a number: %d\n", line);
+        return -1;;
     }
     printf("next_number: %lf\n", val);
     return val;
@@ -82,14 +82,16 @@ char* parse_string(FILE *json) {
     skip_ws(json);
     int c = next_c(json);
     if (c != '"') {
-        fprintf(stderr, "Error: expected string: %d\n", line);
+        fprintf(stderr, "Error: Expected string but found something else: %d\n", line);
         exit(1); // not a string
     }
     c = next_c(json); // should be first char in the string
-    //char *str;
     char buffer[128]; // strings are gauranteed to be 128 or less
     int i = 0;
     while (c != '"') {
+        if (isspace(c)) {
+            continue;
+        }
         buffer[i] = c;
         i++;
         c = next_c(json);
@@ -109,7 +111,7 @@ void read_json(FILE *json) {
     // find beginning of the list
     int c  = next_c(json);
     if (c != '[') {
-        fprintf(stderr, "Error: must begin with [\n");
+        fprintf(stderr, "Error: read_json: JSON file must begin with [\n");
         exit(1);
     }
     skip_ws(json);
@@ -117,7 +119,7 @@ void read_json(FILE *json) {
 
     // check if file empty
     if (c == ']' || c == EOF) {
-        fprintf(stderr, "Error: empty json file\n");
+        fprintf(stderr, "Error: read_json: Empty json file\n");
         exit(1);
     }
     skip_ws(json);
@@ -126,7 +128,7 @@ void read_json(FILE *json) {
     while (1) {
         //c  = next_c(json);
         if (c == ']') {
-            fprintf(stderr, "Error: Unexpected ']' at line %d\n", line);
+            fprintf(stderr, "Error: read_json: Unexpected ']': %d\n", line);
             fclose(json);
             return;
         }
@@ -136,7 +138,7 @@ void read_json(FILE *json) {
             skip_ws(json);
             char *key = parse_string(json);
             if (strcmp(key, "type") != 0) {
-                fprintf(stderr, "Error: First key of an object must be 'type'"); 
+                fprintf(stderr, "Error: read_json: First key of an object must be 'type': %d\n", line); 
                 exit(1);
             }
             skip_ws(json);
@@ -196,7 +198,7 @@ void read_json(FILE *json) {
                     skip_ws(json);
                 }
                 else {
-                    fprintf(stderr, "Error: unexpected value '%c': %d\n", c, line);
+                    fprintf(stderr, "Error: read_json: Unexpected value '%c': %d\n", c, line);
                     exit(1);
                 }
             }
@@ -212,7 +214,7 @@ void read_json(FILE *json) {
                 return;
             }
             else {
-                fprintf(stderr, "Error: Expecting comma or ]: %d\n", line);
+                fprintf(stderr, "Error: read_json: Expecting comma or ]: %d\n", line);
                 exit(1);
             }
         }

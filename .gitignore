@@ -1,4 +1,5 @@
+/bin
 ppmrw
 *.ppm
 .*.swp
-
+*.pdf
