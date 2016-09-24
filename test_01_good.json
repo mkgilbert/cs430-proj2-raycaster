@@ -1,0 +1,22 @@
+[
+    {
+        "type": "camera",
+        "width": 0.5,
+        "height": 0.5
+    },
+
+    {
+        "type": "sphere",
+        "radius": 77.0,
+        "color": [1.0, 0.0, 0.0],
+        "position": [1.0, 3.0, 7.0]
+    },
+
+    {
+        "type": "plane",
+        "color": [1.0, 0.0, 0.0],
+        "position": [1.0, 3.0, 7.0],
+        "normal": [2.0, 3.5, 4.0]
+    }
+
+]
