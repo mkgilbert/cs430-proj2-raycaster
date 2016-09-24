@@ -23,7 +23,7 @@ int next_c(FILE* json) {
         line++;;
     }
     if (c == EOF) {
-        fprintf(stderr, "Error: unepected EOF: %d\n", line);
+        fprintf(stderr, "Error: next_c: Unexpected EOF: %d\n", line);
         exit(1);
     }
     return c;
@@ -82,7 +82,7 @@ char* parse_string(FILE *json) {
     skip_ws(json);
     int c = next_c(json);
     if (c != '"') {
-        fprintf(stderr, "Error: Expected string but found something else: %d\n", line);
+        fprintf(stderr, "Error: Expected beginning of string but found '%c': %d\n", c, line);
         exit(1); // not a string
     }
     c = next_c(json); // should be first char in the string
