@@ -1,8 +1,8 @@
 /** Example
 // Use railroad diagram to determine how to parse
-
+*/
 //#define DEBUG
-**/
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,8 +88,8 @@ void expect_c(FILE* json, int d) {
 double next_number(FILE* json) {
     double val;
     fscanf(json, "%lf", &val);
-    if (val == 0 || val == EOF) {
-        fprintf(stderr, "Error: Expected a number: %d\n", line);
+    if (val == EOF) {
+        fprintf(stderr, "Error: Expected a number but found EOF: %d\n", line);
         return -1;;
     }
     printf("next_number: %lf\n", val);
