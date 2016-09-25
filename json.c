@@ -296,7 +296,7 @@ void print_objects(object *obj) {
     printf("end at i=%d\n", i);
 }
 
-
+/* testing
 int main(int argc, char *argv[]) {
     // testing code
     object c;
@@ -311,4 +311,4 @@ int main(int argc, char *argv[]) {
     read_json(json);
     print_objects(objects);
     return 0;
-}
+}*/

@@ -1,5 +1,5 @@
-PROG=json
-INPUT=json.c
+PROG=raycast
+INPUT=json.c raycast.c
 
 all:
 	if [ ! -e bin ]; then mkdir bin; fi
