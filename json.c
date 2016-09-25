@@ -300,6 +300,43 @@ void read_json(FILE *json) {
     fclose(json);
 }
 
+void print_objects(object *obj) {
+    int i = 0;
+    while (i < MAX_OBJECTS && strlen(obj[i].type) > 0) {
+        printf("object type: %s\n", obj[i].type);
+        if (strcmp(obj[i].type, "camera") == 0) {
+            printf("height: %lf\n", obj[i].data.cam.height);
+            printf("width: %lf\n", obj[i].data.cam.width);
+        }
+        else if (strcmp(obj[i].type, "sphere") == 0) {
+            printf("color: %lf %lf %lf\n", obj[i].data.sph.color[0],
+                                         obj[i].data.sph.color[1],
+                                         obj[i].data.sph.color[2]);
+            printf("position: %lf %lf %lf\n", obj[i].data.sph.position[0],
+                                            obj[i].data.sph.position[1],
+                                            obj[i].data.sph.position[2]);
+            printf("radius: %lf\n", obj[i].data.sph.radius);
+        }
+        else if (strcmp(obj[i].type, "plane") == 0) {
+            printf("color: %lf %lf %lf\n", obj[i].data.pln.color[0],
+                                         obj[i].data.pln.color[1],
+                                         obj[i].data.pln.color[2]);
+            printf("position: %lf %lf %lf\n", obj[i].data.pln.position[0],
+                                            obj[i].data.pln.position[1],
+                                            obj[i].data.pln.position[2]);
+            printf("normal: %lf %lf %lf\n", obj[i].data.pln.normal[0],
+                                         obj[i].data.pln.normal[1],
+                                         obj[i].data.pln.normal[2]);
+        }
+        else {
+            printf("unsupported value\n");
+        }
+        i++;
+    }
+    printf("end at i=%d\n", i);
+}
+
+
 int main(int argc, char *argv[]) {
     // testing code
     object c;
@@ -312,5 +349,6 @@ int main(int argc, char *argv[]) {
 
     FILE *json = fopen(argv[1], "rb");
     read_json(json);
+    print_objects(objects);
     return 0;
 }
