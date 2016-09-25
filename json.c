@@ -9,7 +9,8 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_TYPE_STRLEN 7
+#define MAX_TYPE_STRLEN 7   // maximum length of string expected in object.type
+#define MAX_OBJECTS 128     // maximume number of objects supported in json file
 
 // structs to store different types of objects
 typedef struct camera_t {
@@ -18,15 +19,15 @@ typedef struct camera_t {
 } camera;
 
 typedef struct sphere_t {
-    double color[3];
-    double position[3];
+    double *color;
+    double *position;
     double radius;
 } sphere;
 
 typedef struct plane_t {
-    double color[3];
-    double position[3];
-    double normal[3];
+    double *color;
+    double *position;
+    double *normal;
 } plane;
 
 // object datatype to store json data
@@ -39,7 +40,15 @@ typedef struct object_t {
     } data;
 } object;
 
+// use these to decide which "object" data type to use
+typedef enum object_types_t {
+    CAMERA,
+    SPHERE,
+    PLANE
+} object_types;
+
 int line = 1; // global var for line numbers as we parse
+object objects[128]; // allocate space for every object
 
 // Palmer's refactored parts
 // next_c wraps the getc function that provides error checking and line #
@@ -102,7 +111,6 @@ double* next_vector(FILE* json) {
     v[2] = next_number(json);
     skip_ws(json);
     expect_c(json, ']');
-    skip_ws(json);
     return v;
 }
 // end
@@ -154,16 +162,21 @@ void read_json(FILE *json) {
     }
     skip_ws(json);
 
+    int counter = 0;
+
     // find the objects
     while (1) {
         //c  = next_c(json);
+        if (counter > MAX_OBJECTS) {
+            fprintf(stderr, "Error: read_json: Number of objects is too large: %d\n", line);
+            exit(1);
+        }
         if (c == ']') {
             fprintf(stderr, "Error: read_json: Unexpected ']': %d\n", line);
             fclose(json);
             return;
         }
-        if (c == '{') {
-           // Parse the object... 
+        if (c == '{') {     // found an object
             printf("parsing object...\n");
             skip_ws(json);
             char *key = parse_string(json);
@@ -177,17 +190,22 @@ void read_json(FILE *json) {
             skip_ws(json);
 
             char *type = parse_string(json);
+            object_types obj_type;
             printf("type is '%s'\n", type);
             if (strcmp(type, "camera") == 0) {
                 printf("found camera...\n");
-                // TODO: allocate camera space
-                // TODO: store data
+                obj_type = CAMERA;
+                strcpy(objects[counter].type, "camera");
             }
             else if (strcmp(type, "sphere") == 0) {
                 printf("found sphere...\n");
+                obj_type = SPHERE;
+                strcpy(objects[counter].type, "sphere");
             }
             else if (strcmp(type, "plane") == 0) {
                 printf("found plane...\n"); 
+                obj_type = PLANE;
+                strcpy(objects[counter].type, "plane");
             }
             else {
                 exit(1);
@@ -209,21 +227,49 @@ void read_json(FILE *json) {
                     skip_ws(json);
                     expect_c(json, ':');
                     skip_ws(json);
-                    if ((strcmp(key, "width") == 0) ||
-                            (strcmp(key, "height") == 0) ||
-                            (strcmp(key, "radius") == 0)) {
-                        double value = next_number(json); 
+                    if (strcmp(key, "width") == 0) {
+                        objects[counter].data.cam.width = next_number(json);
                     }
-                    else if ((strcmp(key, "color") == 0) ||
-                            (strcmp(key, "position") == 0) ||
-                            (strcmp(key, "normal") == 0)) {
-                        // need to return multiple values
-                        double* value = next_vector(json); 
+                    else if (strcmp(key, "height") == 0) {
+                        objects[counter].data.cam.height = next_number(json);
+                    }
+                    else if (strcmp(key, "radius") == 0) {
+                        objects[counter].data.sph.radius = next_number(json); 
+                    }
+                    else if (strcmp(key, "color") == 0) {
+                        if (obj_type == SPHERE)
+                            objects[counter].data.sph.color = next_vector(json);
+                        else if (obj_type == PLANE)
+                            objects[counter].data.pln.color = next_vector(json);
+                        else {
+                            fprintf(stderr, "Error: read_json: Color vector can't be applied here: %d\n", line);
+                            exit(1);
+                        }
+                    }
+                    else if (strcmp(key, "position") == 0) {
+                        if (obj_type == SPHERE)
+                            objects[counter].data.sph.position = next_vector(json);
+                        else if (obj_type == PLANE)
+                            objects[counter].data.pln.position = next_vector(json);
+                        else {
+                            fprintf(stderr, "Error: read_json: Position vector can't be applied here: %d\n", line);
+                            exit(1);
+                        }
+                        
+                    }
+                    else if (strcmp(key, "normal") == 0) {
+                        if (obj_type != PLANE) {
+                            fprintf(stderr, "Error: read_json: Normal vector can't be applied here: %d\n", line);
+                            exit(1);
+                        }
+                        else
+                            objects[counter].data.pln.normal = next_vector(json);
                     }
                     else {
-                        // error
+                        fprintf(stderr, "Error: read_json: '%s' not a valid object: %d\n", key, line); 
                         exit(1);
                     }
+                    
                     // do something with key and value
                     skip_ws(json);
                 }
@@ -249,6 +295,7 @@ void read_json(FILE *json) {
             }
         }
         c = next_c(json);
+        counter++;
     }
     fclose(json);
 }
@@ -263,12 +310,7 @@ int main(int argc, char *argv[]) {
     printf("object height: %lf\n", c.data.cam.height);
     printf("object width: %lf\n", c.data.cam.width);
 
-    sphere s;
-    s.color[0] = 1.0;
-    s.position[0] = 3;
-    s.radius = 2;
-    printf("sphere radius: %lf\n", s.radius);
-    //FILE *json = fopen(argv[1], "rb");
-    //read_json(json);
+    FILE *json = fopen(argv[1], "rb");
+    read_json(json);
     return 0;
 }
