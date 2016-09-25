@@ -1,56 +1,16 @@
-/** Example
+/** json.c parses json files for view objects
 // Use railroad diagram to determine how to parse
 */
-//#define DEBUG
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "include/json.h"
 
-#define MAX_TYPE_STRLEN 7   // maximum length of string expected in object.type
-#define MAX_OBJECTS 128     // maximume number of objects supported in json file
 
-// structs to store different types of objects
-typedef struct camera_t {
-    double width;
-    double height;
-} camera;
+int line = 1;                   // global var for line numbers as we parse
+object objects[MAX_OBJECTS];    // allocate space for all objects in json file
 
-typedef struct sphere_t {
-    double *color;
-    double *position;
-    double radius;
-} sphere;
-
-typedef struct plane_t {
-    double *color;
-    double *position;
-    double *normal;
-} plane;
-
-// object datatype to store json data
-typedef struct object_t {
-    char type[MAX_TYPE_STRLEN];
-    union {
-        camera cam;
-        sphere sph;
-        plane pln;
-    } data;
-} object;
-
-// use these to decide which "object" data type to use
-typedef enum object_types_t {
-    CAMERA,
-    SPHERE,
-    PLANE
-} object_types;
-
-int line = 1; // global var for line numbers as we parse
-object objects[128]; // allocate space for every object
-
-// Palmer's refactored parts
 // next_c wraps the getc function that provides error checking and line #
 // Problem: if we do ungetc, it could screw us up on the line #
 int next_c(FILE* json) {
