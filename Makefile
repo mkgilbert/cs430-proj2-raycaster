@@ -2,7 +2,7 @@ PROG=json
 INPUT=json.c
 
 all:
-	mkdir bin
+	if [ ! -e bin ]; then mkdir bin; fi
 	gcc -O3 -g $(INPUT) -o bin/$(PROG)
 
 clean:

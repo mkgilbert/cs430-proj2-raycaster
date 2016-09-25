@@ -9,6 +9,36 @@
 #include <string.h>
 #include <ctype.h>
 
+#define MAX_TYPE_STRLEN 7
+
+// structs to store different types of objects
+typedef struct camera_t {
+    double width;
+    double height;
+} camera;
+
+typedef struct sphere_t {
+    double color[3];
+    double position[3];
+    double radius;
+} sphere;
+
+typedef struct plane_t {
+    double color[3];
+    double position[3];
+    double normal[3];
+} plane;
+
+// object datatype to store json data
+typedef struct object_t {
+    char type[MAX_TYPE_STRLEN];
+    union {
+        camera cam;
+        sphere sph;
+        plane pln;
+    } data;
+} object;
+
 int line = 1; // global var for line numbers as we parse
 
 // Palmer's refactored parts
@@ -224,7 +254,21 @@ void read_json(FILE *json) {
 }
 
 int main(int argc, char *argv[]) {
-    FILE *json = fopen(argv[1], "rb");
-    read_json(json);
+    // testing code
+    object c;
+    strcpy(c.type, "camera");
+    c.data.cam.height = 0.5;
+    c.data.cam.width = 0.4;
+    printf("object type: %s\n", c.type);
+    printf("object height: %lf\n", c.data.cam.height);
+    printf("object width: %lf\n", c.data.cam.width);
+
+    sphere s;
+    s.color[0] = 1.0;
+    s.position[0] = 3;
+    s.radius = 2;
+    printf("sphere radius: %lf\n", s.radius);
+    //FILE *json = fopen(argv[1], "rb");
+    //read_json(json);
     return 0;
 }
