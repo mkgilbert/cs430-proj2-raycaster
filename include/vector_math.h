@@ -1,9 +1,9 @@
 /* 3d math with vectors */
-#ifndef 3DMATH_H
-#define 3DMATH_H
+#ifndef VECTORMATH_H
+#define VECTORMATH_H
 #endif
 
-#ifdef 3DMATH_H
+#ifdef VECTORMATH_H
 
 // way to represent vectors in memory?
 // diff between float and double --> 32 vs 64 bits
