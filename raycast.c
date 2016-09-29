@@ -18,15 +18,50 @@ static inline void normalize(double *v) {
 }
 
 
-int plane_intersection(ray *R, V3 *C) {
+int plane_intersection(double *Ro, double *Rd, double *Pos, double *Norm) {
     return -1;
 }
 
-int sphere_intersection(V3 *Ro, V3 *Rd, V3 *C, double r) {
+double sphere_intersection(double *Ro, double *Rd, double *C, double r) {
     double a, b, c;
-    a = sqr(Rd[0]) + sqr(Rd[1]) + sqr(Rd[2]);
-    b = 2 * (Rd[0]*(Ro[0]-C[0]) + Rd[1]*(Ro[1]-C[1]) + Rd[2]*(Ro[2]-C[2]));
 
+    // calculate quadratic formula
+    // First find a, b, c
+    a = sqr(Rd[0]) + sqr(Rd[1]) + sqr(Rd[2]);
+    printf("value of a: %lf\n", a);
+    b = 2 * (Rd[0]*(Ro[0]-C[0]) + Rd[1]*(Ro[1]-C[1]) + Rd[2]*(Ro[2]-C[2]));
+    printf("value of b: %lf\n", b);
+    c = sqr(Ro[0]-C[0]) + sqr(Ro[1]-C[1]) + sqr(Ro[2]-C[2]);
+    printf("value of c: %lf\n", c);
+
+    // make sure a is 1 (means the ray direction was normalized)
+    if (a < 1.0 || a > 1.0) {
+        fprintf(stderr, "Ray direction was not normalized\n");
+        exit(1);
+    }
+    
+    // solve for the discriminant
+    double t0 = (-1*b - sqrt(sqr(b) - 4*c))/2;
+    double t1 = (-1*b + sqrt(sqr(b) - 4*c))/2;
+
+    if (t0 < 0 && t1 < 0) {
+        // no intersection
+        return -1;
+    }
+    else if (t0 < 0 && t1 > 0) {
+        return t1;
+    }
+    else if (t0 > 0 && t1 < 0) {
+        return t0;
+    }
+    else { // they were both positive
+        if (t0 <= t1)
+            return t0;
+        else
+            return t1;
+    }
+    printf("value of t0: %lf\n", t0);
+    printf("value of t1: %lf\n", t1);
     return -1;
 }
 
@@ -70,7 +105,7 @@ void raycast_scene(image *img, object *objects) {
                     case SPHERE:
                         break;
                     case PLANE:
-                        break
+                        break;
                     default:
                         // Error
                         exit(1);
@@ -91,9 +126,21 @@ void raycast_scene(image *img, object *objects) {
 
 int main(int argc, char *argv[]) {
     // TODO: error checking for file
-    FILE *json = fopen(argv[1], "rb");
-    read_json(json);
-    print_objects(objects);
+    //FILE *json = fopen(argv[1], "rb");
+    //read_json(json);
+    //print_objects(objects);
+
+    image img;
+    img.width=400;
+    img.height=400;
+    img.pixmap = malloc(sizeof(double*)*img.width*img.height);
+    double Ro[3] = {0, 0, 0};
+    double Rd[3] = {5, 5, 20};
+    normalize(Rd);
+    double C[3] = {5, 5, 20};
+    double radius = 0.5;
+    
+    sphere_intersection(Ro, Rd, C, radius);
 
     // loop through objects in the scene and do raycasting
     /*int i = 0;
