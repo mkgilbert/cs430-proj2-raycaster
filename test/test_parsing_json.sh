@@ -7,7 +7,7 @@ cd test
 
 PROG=../bin/raycast
 i=0
-for f in *.json;
+for f in parsing_tests/*.json;
 do
     echo "testing $f"
     ${PROG} $f

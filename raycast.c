@@ -8,6 +8,7 @@
 #include "include/raycast.h"
 #include "include/ppmrw.h"
 
+
 static inline void normalize(double *v) {
     double len = sqr(v[0]) + sqr(v[1]) + sqr(v[2]);
     len = sqrt(len);
@@ -19,6 +20,21 @@ static inline void normalize(double *v) {
 
 
 int plane_intersection(double *Ro, double *Rd, double *Pos, double *Norm) {
+    return -1;
+}
+
+/**
+ * Finds the camera information in a list of scene objects
+ */
+int get_camera(object *objects) {
+    int i = 0;
+    while (i < MAX_OBJECTS && objects[i].type != 0) {
+        if (objects[i].type == CAMERA) {
+            return i;
+        }
+        i++;
+    }
+    // no camera found in data
     return -1;
 }
 
@@ -126,13 +142,17 @@ void raycast_scene(image *img, object *objects) {
 
 int main(int argc, char *argv[]) {
     // TODO: error checking for file
-    //FILE *json = fopen(argv[1], "rb");
-    //read_json(json);
+    /* testing that we can read json objects */
+    FILE *json = fopen(argv[1], "rb");
+    read_json(json);
     //print_objects(objects);
-
     image img;
-    img.width=400;
-    img.height=400;
+    int pos = get_camera(objects);
+    printf("camera is object %d\n", pos);
+    printf("width: %lf\n", objects[pos].cam.width);
+    printf("height: %lf\n", objects[pos].cam.height);
+
+    /* intersection testing */
     img.pixmap = malloc(sizeof(double*)*img.width*img.height);
     double Ro[3] = {0, 0, 0};
     double Rd[3] = {5, 5, 20};
