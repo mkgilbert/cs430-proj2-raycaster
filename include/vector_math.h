@@ -1,4 +1,4 @@
-/* 3d math with vectors */
+/* 3d vector math, with some other basic math thrown in */
 #ifndef VECTORMATH_H
 #define VECTORMATH_H
 #endif
@@ -10,13 +10,20 @@
 // use doubles!
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 typedef double V3[3]; // array of double values to represent 
+
 
 // inline says don't compile to a function somewhere in the program, just do
 // this op whenever you see it (gives performance savings)
 // C may not inline this, it might put it into the library to use. static tells
 // it to put the function in a local namespace
+
+static inline double sqr(double v) {
+    return v*v;
+}
+
 static inline void v3_add(V3 a, V3 b, V3 c) {
     c[0] = a[0] + b[0];
     c[1] = a[1] + b[1];

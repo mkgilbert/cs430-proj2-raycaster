@@ -150,22 +150,22 @@ void read_json(FILE *json) {
             skip_ws(json);
 
             char *type = parse_string(json);
-            object_types obj_type;
+            int obj_type;
             printf("type is '%s'\n", type);
             if (strcmp(type, "camera") == 0) {
                 printf("found camera...\n");
                 obj_type = CAMERA;
-                strcpy(objects[counter].type, "camera");
+                objects[counter].type = CAMERA;
             }
             else if (strcmp(type, "sphere") == 0) {
                 printf("found sphere...\n");
                 obj_type = SPHERE;
-                strcpy(objects[counter].type, "sphere");
+                objects[counter].type = SPHERE;
             }
             else if (strcmp(type, "plane") == 0) {
                 printf("found plane...\n"); 
                 obj_type = PLANE;
-                strcpy(objects[counter].type, "plane");
+                objects[counter].type = PLANE;
             }
             else {
                 exit(1);
@@ -188,19 +188,19 @@ void read_json(FILE *json) {
                     expect_c(json, ':');
                     skip_ws(json);
                     if (strcmp(key, "width") == 0) {
-                        objects[counter].data.cam.width = next_number(json);
+                        objects[counter].cam.width = next_number(json);
                     }
                     else if (strcmp(key, "height") == 0) {
-                        objects[counter].data.cam.height = next_number(json);
+                        objects[counter].cam.height = next_number(json);
                     }
                     else if (strcmp(key, "radius") == 0) {
-                        objects[counter].data.sph.radius = next_number(json); 
+                        objects[counter].sph.radius = next_number(json); 
                     }
                     else if (strcmp(key, "color") == 0) {
                         if (obj_type == SPHERE)
-                            objects[counter].data.sph.color = next_vector(json);
+                            objects[counter].sph.color = next_vector(json);
                         else if (obj_type == PLANE)
-                            objects[counter].data.pln.color = next_vector(json);
+                            objects[counter].pln.color = next_vector(json);
                         else {
                             fprintf(stderr, "Error: read_json: Color vector can't be applied here: %d\n", line);
                             exit(1);
@@ -208,9 +208,9 @@ void read_json(FILE *json) {
                     }
                     else if (strcmp(key, "position") == 0) {
                         if (obj_type == SPHERE)
-                            objects[counter].data.sph.position = next_vector(json);
+                            objects[counter].sph.position = next_vector(json);
                         else if (obj_type == PLANE)
-                            objects[counter].data.pln.position = next_vector(json);
+                            objects[counter].pln.position = next_vector(json);
                         else {
                             fprintf(stderr, "Error: read_json: Position vector can't be applied here: %d\n", line);
                             exit(1);
@@ -223,7 +223,7 @@ void read_json(FILE *json) {
                             exit(1);
                         }
                         else
-                            objects[counter].data.pln.normal = next_vector(json);
+                            objects[counter].pln.normal = next_vector(json);
                     }
                     else {
                         fprintf(stderr, "Error: read_json: '%s' not a valid object: %d\n", key, line); 
@@ -262,31 +262,31 @@ void read_json(FILE *json) {
 
 void print_objects(object *obj) {
     int i = 0;
-    while (i < MAX_OBJECTS && strlen(obj[i].type) > 0) {
-        printf("object type: %s\n", obj[i].type);
-        if (strcmp(obj[i].type, "camera") == 0) {
-            printf("height: %lf\n", obj[i].data.cam.height);
-            printf("width: %lf\n", obj[i].data.cam.width);
+    while (i < MAX_OBJECTS && obj[i].type > 0) {
+        printf("object type: %d\n", obj[i].type);
+        if (obj[i].type == CAMERA) {
+            printf("height: %lf\n", obj[i].cam.height);
+            printf("width: %lf\n", obj[i].cam.width);
         }
-        else if (strcmp(obj[i].type, "sphere") == 0) {
-            printf("color: %lf %lf %lf\n", obj[i].data.sph.color[0],
-                                         obj[i].data.sph.color[1],
-                                         obj[i].data.sph.color[2]);
-            printf("position: %lf %lf %lf\n", obj[i].data.sph.position[0],
-                                            obj[i].data.sph.position[1],
-                                            obj[i].data.sph.position[2]);
-            printf("radius: %lf\n", obj[i].data.sph.radius);
+        else if (obj[i].type == SPHERE) {
+            printf("color: %lf %lf %lf\n", obj[i].sph.color[0],
+                                         obj[i].sph.color[1],
+                                         obj[i].sph.color[2]);
+            printf("position: %lf %lf %lf\n", obj[i].sph.position[0],
+                                            obj[i].sph.position[1],
+                                            obj[i].sph.position[2]);
+            printf("radius: %lf\n", obj[i].sph.radius);
         }
-        else if (strcmp(obj[i].type, "plane") == 0) {
-            printf("color: %lf %lf %lf\n", obj[i].data.pln.color[0],
-                                         obj[i].data.pln.color[1],
-                                         obj[i].data.pln.color[2]);
-            printf("position: %lf %lf %lf\n", obj[i].data.pln.position[0],
-                                            obj[i].data.pln.position[1],
-                                            obj[i].data.pln.position[2]);
-            printf("normal: %lf %lf %lf\n", obj[i].data.pln.normal[0],
-                                         obj[i].data.pln.normal[1],
-                                         obj[i].data.pln.normal[2]);
+        else if (obj[i].type == PLANE) {
+            printf("color: %lf %lf %lf\n", obj[i].pln.color[0],
+                                         obj[i].pln.color[1],
+                                         obj[i].pln.color[2]);
+            printf("position: %lf %lf %lf\n", obj[i].pln.position[0],
+                                            obj[i].pln.position[1],
+                                            obj[i].pln.position[2]);
+            printf("normal: %lf %lf %lf\n", obj[i].pln.normal[0],
+                                         obj[i].pln.normal[1],
+                                         obj[i].pln.normal[2]);
         }
         else {
             printf("unsupported value\n");
@@ -300,12 +300,12 @@ void print_objects(object *obj) {
 int main(int argc, char *argv[]) {
     // testing code
     object c;
-    strcpy(c.type, "camera");
-    c.data.cam.height = 0.5;
-    c.data.cam.width = 0.4;
-    printf("object type: %s\n", c.type);
-    printf("object height: %lf\n", c.data.cam.height);
-    printf("object width: %lf\n", c.data.cam.width);
+    c.type = CAMERA;
+    c.cam.height = 0.5;
+    c.cam.width = 0.4;
+    printf("object type: %d\n", c.type);
+    printf("object height: %lf\n", c.cam.height);
+    printf("object width: %lf\n", c.cam.width);
 
     FILE *json = fopen(argv[1], "rb");
     read_json(json);

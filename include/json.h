@@ -9,8 +9,10 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_TYPE_STRLEN 7   // maximum length of string expected in object.type
 #define MAX_OBJECTS 128     // maximume number of objects supported in json file
+#define CAMERA 1
+#define SPHERE 2
+#define PLANE 3
 
 // structs to store different types of objects
 typedef struct camera_t {
@@ -32,20 +34,13 @@ typedef struct plane_t {
 
 // object datatype to store json data
 typedef struct object_t {
-    char type[MAX_TYPE_STRLEN];
+    int type;  // -1 so we can check if the object has been populated
     union {
         camera cam;
         sphere sph;
         plane pln;
-    } data;
+    };
 } object;
-
-// use these to decide which "object" data type to use
-typedef enum object_types_t {
-    CAMERA,
-    SPHERE,
-    PLANE
-} object_types;
 
 /* global variables */
 extern int line;
