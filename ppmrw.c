@@ -446,7 +446,7 @@ void print_pixels(RGBPixel *pixmap, int width, int height) {
 /*******************************************************//**
  * main
  * ********************************************************/
-int main(int argc, char *argv[]){
+/*int main(int argc, char *argv[]){
     if (argc != 4) {
         fprintf(stderr, "Error: main: ppmrw requires 3 arguments\n");
         return 1;
@@ -472,12 +472,12 @@ int main(int argc, char *argv[]){
 
     // allocate space for header information
     header *hdr = (header *)malloc(sizeof(header));
-
+*/
 
     /******************************//**
      * read data from input file
      *********************************/
-
+/*
     // read header of input file
     ret_val = read_header(in_ptr, hdr);
     
@@ -517,11 +517,11 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Error: main: Problem reading image data\n");
         return -1;
     }
-
+*/
     /*****************************//**
      * write the data to output file
      *********************************/
-
+/*
     // write header info to output file
     ret_val = write_header(out_ptr, hdr);
     if (ret_val < 0) {
@@ -548,4 +548,4 @@ int main(int argc, char *argv[]){
     fclose(in_ptr);
     fclose(out_ptr);
     return 0;
-}
+}*/

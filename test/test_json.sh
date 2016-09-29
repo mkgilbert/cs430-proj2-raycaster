@@ -6,9 +6,11 @@ make clean && make
 cd test
 
 PROG=../bin/raycast
-
+i=0
 for f in *.json;
 do
     echo "testing $f"
     ${PROG} $f
+    i=$(($i+1))
 done
+echo "finished testing $i files"
