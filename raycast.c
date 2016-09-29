@@ -22,7 +22,11 @@ int plane_intersection(ray *R, V3 *C) {
     return -1;
 }
 
-int sphere_intersection(ray *R, V3 *C, double r) {
+int sphere_intersection(V3 *Ro, V3 *Rd, V3 *C, double r) {
+    double a, b, c;
+    a = sqr(Rd[0]) + sqr(Rd[1]) + sqr(Rd[2]);
+    b = 2 * (Rd[0]*(Ro[0]-C[0]) + Rd[1]*(Ro[1]-C[1]) + Rd[2]*(Ro[2]-C[2]));
+
     return -1;
 }
 
@@ -61,6 +65,12 @@ void raycast_scene(image *img, object *objects) {
                     case 0:
                         printf("no object found\n");
                         break;
+                    case CAMERA:
+                        break;
+                    case SPHERE:
+                        break;
+                    case PLANE:
+                        break
                     default:
                         // Error
                         exit(1);
