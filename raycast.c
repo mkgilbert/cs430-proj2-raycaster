@@ -43,7 +43,18 @@ void shade_pixel(double *color, int row, int col, image *img) {
     img->pixmap[row * img->width + col].b = color[2];
 }
 
-int plane_intersection(double *Ro, double *Rd, double *Pos, double *Norm) {
+int plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
+    normalize(Norm);
+    // determine if plane is parallel to the ray
+    double den = v3_dot(Norm, Rd);          // denominator
+    if (den == 0) return -1;                // the plane is parallel
+    double D = v3_len(Pos);                 // distance from origin to the plane
+    //printf("D = %lf\n", D);
+    double num = -1*(v3_dot(Norm, Ro) + D); // numerator
+    double t = num / den;
+    //printf("t = %lf\n", t);
+    if (t >= 0)
+        return t;
     return -1;
 }
 
@@ -158,6 +169,8 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
                         //printf("t = %lf\n", t);
                         break;
                     case PLANE:
+                        t = plane_intersect(Ro, Rd, objects[i].pln.position,
+                                                    objects[i].pln.normal);
                         break;
                     default:
                         // Error
@@ -172,7 +185,7 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
                 //printf("#");    // ascii ray tracer "hit"
                 //printf("type: %d\n", objects[best_i].type);
                 if (objects[best_i].type == PLANE) {
-                    // do stuff
+                    shade_pixel(objects[best_i].pln.color, y, x, img);
                 }
                 else if (objects[best_i].type == SPHERE) {
                     //printf("shade\n");
