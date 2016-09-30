@@ -7,9 +7,9 @@
 
     {
         "type": "sphere",
-        "radius": 4.0,
+        "radius": 10,
         "color": [1.0, 0.0, 0.0],
-        "position": [1.0, 3.0, 7.0]
+        "position": [1.2, 2, 50]
     }
 
 ]

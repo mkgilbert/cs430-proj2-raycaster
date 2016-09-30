@@ -38,27 +38,47 @@ int get_camera(object *objects) {
     return -1;
 }
 
-double sphere_intersection(double *Ro, double *Rd, double *C, double r) {
+double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
     double a, b, c;
-
+    /*for (int i=0; i<3; i++) {
+        printf("Ro[%d] = %lf\n", i, Ro[i]);
+        printf("Rd[%d] = %lf\n", i, Rd[i]);
+        printf("C[%d] = %lf\n", i, C[i]);
+    }*/
     // calculate quadratic formula
     // First find a, b, c
     a = sqr(Rd[0]) + sqr(Rd[1]) + sqr(Rd[2]);
-    printf("value of a: %lf\n", a);
+    //printf("value of a: %lf\n", a);
     b = 2 * (Rd[0]*(Ro[0]-C[0]) + Rd[1]*(Ro[1]-C[1]) + Rd[2]*(Ro[2]-C[2]));
-    printf("value of b: %lf\n", b);
-    c = sqr(Ro[0]-C[0]) + sqr(Ro[1]-C[1]) + sqr(Ro[2]-C[2]);
-    printf("value of c: %lf\n", c);
+    //printf("value of b: %lf\n", b);
+    c = sqr(Ro[0]-C[0]) + sqr(Ro[1]-C[1]) + sqr(Ro[2]-C[2]) - sqr(r);
+    //printf("value of c: %lf\n", c);
 
     // make sure a is 1 (means the ray direction was normalized)
-    if (a < 1.0 || a > 1.0) {
+    if (a > 1.0001 || a < .9999) {
+        printf("a = %lf\n", a);
         fprintf(stderr, "Ray direction was not normalized\n");
         exit(1);
     }
     
-    // solve for the discriminant
-    double t0 = (-1*b - sqrt(sqr(b) - 4*c))/2;
-    double t1 = (-1*b + sqrt(sqr(b) - 4*c))/2;
+    // check that discriminant is <, =, or > 0
+    double disc = sqr(b) - 4*a*c;
+    double t0, t1;  // solutions
+    if (disc < 0) {
+        //printf("disc was < 0\n");
+        return -1; // no solution
+    }
+    else if (disc == 0) {
+        t0 = -1*(b / (2*a)); // single solution
+        //printf("t0 = %lf\n", t0);
+    }
+    else {  // 2 solutions: find the smaller
+        t0 = (-1*b - sqrt(sqr(b) - 4*c))/2;
+        t1 = (-1*b + sqrt(sqr(b) - 4*c))/2;
+        //printf("t0 = %lf\n", t0);
+        //printf("t1 = %lf\n", t1);
+    }
+
 
     if (t0 < 0 && t1 < 0) {
         // no intersection
@@ -76,12 +96,12 @@ double sphere_intersection(double *Ro, double *Rd, double *C, double r) {
         else
             return t1;
     }
-    printf("value of t0: %lf\n", t0);
-    printf("value of t1: %lf\n", t1);
+    //printf("value of t0: %lf\n", t0);
+    //printf("value of t1: %lf\n", t1);
     return -1;
 }
 
-void raycast_scene(image *img, object *objects) {
+void raycast_scene(image *img, double cam_width, double cam_height, object *objects) {
     // loop over all pixels and test for intesections with objects.
     // store results in pixmap
     int x;  // x coord iterator
@@ -89,16 +109,20 @@ void raycast_scene(image *img, object *objects) {
     int i;  // object iterator
     double cx = 0;
     double cy = 0;
-    double h = 0.7; // these will be set from the camera object
-    double w = 0.7;
+    double h = cam_height; // these will be set from the camera object
+    double w = cam_width;
     
-    int M = 20; // pixels width and height of image
-    int N = 20;
+    //printf("h: %lf\n", h);
+    //printf("w: %lf\n", w);
+    int M = img->width; // pixels width and height of image
+    int N = img->height;
+    //printf("M: %d\n", M);
+    //printf("N: %d\n", N);
 
     double pixheight = h / M;
     double pixwidth = w / N;
-    for (int y = 0; y < M; y++) {
-        for (int x = 0; x < N; x++) {
+    for (y = 0; y < M; y++) {
+        for (x = 0; x < N; x++) {
             double Ro[3] = {0, 0, 0}; // vector that represents the ray origin
             // Rd = normalize(Pixel - Ro)
             double Rd[3] = {
@@ -109,7 +133,7 @@ void raycast_scene(image *img, object *objects) {
             normalize(Rd);
 
             double best_t = INFINITY;
-            for (int i=0; objects[i].type != 0; i++) {
+            for (i=0; objects[i].type != 0; i++) {
                 // we need to run intersection test on each object
                 double t = 0;
                 switch(objects[i].type) {
@@ -119,6 +143,9 @@ void raycast_scene(image *img, object *objects) {
                     case CAMERA:
                         break;
                     case SPHERE:
+                        t = sphere_intersect(Ro, Rd, objects[i].sph.position,
+                                                        objects[i].sph.radius);
+                        //printf("t = %lf\n", t);
                         break;
                     case PLANE:
                         break;
@@ -147,6 +174,8 @@ int main(int argc, char *argv[]) {
     read_json(json);
     //print_objects(objects);
     image img;
+    img.width = 100;
+    img.height = 100;
     int pos = get_camera(objects);
     printf("camera is object %d\n", pos);
     printf("width: %lf\n", objects[pos].cam.width);
@@ -160,8 +189,11 @@ int main(int argc, char *argv[]) {
     double C[3] = {5, 5, 20};
     double radius = 0.5;
     
-    sphere_intersection(Ro, Rd, C, radius);
+    sphere_intersect(Ro, Rd, C, radius);
 
+    /* raycasting a single object test */
+    raycast_scene(&img, objects[pos].cam.width, objects[pos].cam.height, objects);
+    
     // loop through objects in the scene and do raycasting
     /*int i = 0;
     while (i < MAX_OBJECTS && strlen(objects[i].type) > 0) {
