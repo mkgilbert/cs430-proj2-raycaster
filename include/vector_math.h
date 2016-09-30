@@ -24,6 +24,10 @@ static inline double sqr(double v) {
     return v*v;
 }
 
+static inline double v3_len(V3 a) {
+    return sqrt(sqr(a[0]) + sqr(a[1]) + sqr(a[2]));
+}
+
 static inline void v3_add(V3 a, V3 b, V3 c) {
     c[0] = a[0] + b[0];
     c[1] = a[1] + b[1];
