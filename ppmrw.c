@@ -426,6 +426,30 @@ int write_header(FILE *fh, header *hdr) {
     return ret_val;
 }
 
+void create_ppm(FILE *fh, int type, image *img) {
+    // error checking
+    if (type != 3 && type != 6) {
+        fprintf(stderr, "Error: create_ppm: type must be 3 or 6\n");
+        exit(1);
+    }
+    // create header
+    header hdr;
+    hdr.file_type = type;
+    hdr.width = img->width;
+    hdr.height = img->height;
+    hdr.max_color_val = 255;
+    // write header
+    int res = write_header(fh, &hdr);
+    if (res < 0) {
+        fprintf(stderr, "Error: create_ppm: Problem writing header to file\n");
+        exit(1);
+    }
+    // write data
+    if (type == 3)
+        write_p3_data(fh, img);
+    else
+        write_p6_data(fh, img);
+} 
 
 /* TESTING helper functions */
 void print_pixels(RGBPixel *pixmap, int width, int height) {

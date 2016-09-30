@@ -33,4 +33,6 @@ typedef struct image_t {
     int width, height, max_color_val;
 } image;
 
+void print_pixels(RGBPixel *pixmap, int width, int height);
+void create_ppm(FILE *fh, int type, image *img);
 #endif
