@@ -18,11 +18,6 @@ static inline void normalize(double *v) {
 
 }
 
-
-int plane_intersection(double *Ro, double *Rd, double *Pos, double *Norm) {
-    return -1;
-}
-
 /**
  * Finds the camera information in a list of scene objects
  */
@@ -35,6 +30,20 @@ int get_camera(object *objects) {
         i++;
     }
     // no camera found in data
+    return -1;
+}
+
+void shade_pixel(double *color, int row, int col, image *img) {
+    // fill in pixel color values
+    //printf("color: %lf %lf %lf\n", color[0], color[1], color[2]);
+    // need to flip the y axis due to the placement of the viewplane
+    row = (img->height-1) - row;
+    img->pixmap[row * img->width + col].r = color[0];
+    img->pixmap[row * img->width + col].g = color[1];
+    img->pixmap[row * img->width + col].b = color[2];
+}
+
+int plane_intersection(double *Ro, double *Rd, double *Pos, double *Norm) {
     return -1;
 }
 
@@ -132,6 +141,7 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
             }; // ray direction
             normalize(Rd);
 
+            int best_i;
             double best_t = INFINITY;
             for (i=0; objects[i].type != 0; i++) {
                 // we need to run intersection test on each object
@@ -153,17 +163,27 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
                         // Error
                         exit(1);
                 }
-                if (t > 0 && t < best_t) best_t = t;
-
+                if (t > 0 && t < best_t) {
+                    best_t = t;
+                    best_i = i;
+                }
             }
             if (best_t > 0 && best_t != INFINITY) {// there was an intersection
-                printf("#");    // ascii ray tracer "hit"
+                //printf("#");    // ascii ray tracer "hit"
+                //printf("type: %d\n", objects[best_i].type);
+                if (objects[best_i].type == PLANE) {
+                    // do stuff
+                }
+                else if (objects[best_i].type == SPHERE) {
+                    //printf("shade\n");
+                    shade_pixel(objects[best_i].sph.color, y, x, img);
+                }
             }
             else {
-                printf(".");    // ascii ray tracer "miss"
+                //printf(".");    // ascii ray tracer "miss"
             }
         }
-        printf("\n");
+        //printf("\n");
     }
 }
 
@@ -172,28 +192,38 @@ int main(int argc, char *argv[]) {
     /* testing that we can read json objects */
     FILE *json = fopen(argv[1], "rb");
     read_json(json);
-    //print_objects(objects);
+    print_objects(objects);
     image img;
-    img.width = 100;
-    img.height = 100;
+    img.width = 400;
+    img.height = 400;
+    img.pixmap = malloc(sizeof(double*)*img.width*img.height);
     int pos = get_camera(objects);
     printf("camera is object %d\n", pos);
     printf("width: %lf\n", objects[pos].cam.width);
     printf("height: %lf\n", objects[pos].cam.height);
 
     /* intersection testing */
-    img.pixmap = malloc(sizeof(double*)*img.width*img.height);
-    double Ro[3] = {0, 0, 0};
+    /*double Ro[3] = {0, 0, 0};
     double Rd[3] = {5, 5, 20};
     normalize(Rd);
     double C[3] = {5, 5, 20};
-    double radius = 0.5;
-    
-    sphere_intersect(Ro, Rd, C, radius);
+    double radius = 0.5;*/
+    //double red[3] = {255, 1, 25};
+
+    //sphere_intersect(Ro, Rd, C, radius);
+    /* shade_pixel test */
+    /*for (int i=0; i<100; i++) {
+        for (int j=0; j<100; j++) {
+            shade_pixel(red, i, j, &img);
+        }
+    }
+    print_pixels(img.pixmap, 100, 100);*/
 
     /* raycasting a single object test */
     raycast_scene(&img, objects[pos].cam.width, objects[pos].cam.height, objects);
-    
+    FILE *out = fopen("image.ppm", "wb");
+    create_ppm(out, 3, &img);
+    fclose(out);
     // loop through objects in the scene and do raycasting
     /*int i = 0;
     while (i < MAX_OBJECTS && strlen(objects[i].type) > 0) {
