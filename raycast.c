@@ -34,9 +34,6 @@ int get_camera(object *objects) {
 
 void shade_pixel(double *color, int row, int col, image *img) {
     // fill in pixel color values
-    //printf("color: %lf %lf %lf\n", color[0], color[1], color[2]);
-    // need to flip the y axis due to the placement of the viewplane
-    //row = (img->height-1) - row;
     img->pixmap[row * img->width + col].r = color[0];
     img->pixmap[row * img->width + col].g = color[1];
     img->pixmap[row * img->width + col].b = color[2];
@@ -126,9 +123,9 @@ double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
 void raycast_scene(image *img, double cam_width, double cam_height, object *objects) {
     // loop over all pixels and test for intesections with objects.
     // store results in pixmap
-    int x;  // x coord iterator
-    int y;  // y coord iterator
-    int i;  // object iterator
+    int i;  // x coord iterator
+    int j;  // y coord iterator
+    int o;  // object iterator
     double vp_pos[3] = {0, 0, 1};   // view plane position
     double Ro[3] = {0, 0, 0};       // camera position (ray origin)
     double point[3] = {0, 0, 0};    // point on viewplane where intersection happens
@@ -139,35 +136,35 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
     double Rd[3] = {0, 0, 0};       // direction of Ray
     point[2] = vp_pos[2];    // set intersecting point Z to viewplane Z
 
-    for (x = 0; x < img->height; x++) {
-        point[1] = -(vp_pos[1] - cam_height/2.0 + pixheight*(x + 0.5));
-        for (y = 0; y < img->width; y++) {
-            point[0] = vp_pos[0] - cam_width/2.0 + pixwidth*(y + 0.5);
+    for (i = 0; i < img->height; i++) {
+        point[1] = -(vp_pos[1] - cam_height/2.0 + pixheight*(i + 0.5));
+        for (j = 0; j < img->width; j++) {
+            point[0] = vp_pos[0] - cam_width/2.0 + pixwidth*(j + 0.5);
             normalize(point);   // normalize the point
             // store normalized point as our ray direction
             Rd[0] = point[0];
             Rd[1] = point[1];
             Rd[2] = point[2];
 
-            int best_i;
+            int best_o;
             double best_t = INFINITY;
-            for (i=0; objects[i].type != 0; i++) {
+            for (o=0; objects[o].type != 0; o++) {
                 // we need to run intersection test on each object
                 double t = 0;
-                switch(objects[i].type) {
+                switch(objects[o].type) {
                     case 0:
                         printf("no object found\n");
                         break;
                     case CAMERA:
                         break;
                     case SPHERE:
-                        t = sphere_intersect(Ro, Rd, objects[i].sph.position,
-                                                        objects[i].sph.radius);
+                        t = sphere_intersect(Ro, Rd, objects[o].sph.position,
+                                                        objects[o].sph.radius);
                         //printf("t = %lf\n", t);
                         break;
                     case PLANE:
-                        t = plane_intersect(Ro, Rd, objects[i].pln.position,
-                                                    objects[i].pln.normal);
+                        t = plane_intersect(Ro, Rd, objects[o].pln.position,
+                                                    objects[o].pln.normal);
                         break;
                     default:
                         // Error
@@ -175,18 +172,18 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
                 }
                 if (t > 0 && t < best_t) {
                     best_t = t;
-                    best_i = i;
+                    best_o = o;
                 }
             }
             if (best_t > 0 && best_t != INFINITY) {// there was an intersection
                 //printf("#");    // ascii ray tracer "hit"
                 //printf("type: %d\n", objects[best_i].type);
-                if (objects[best_i].type == PLANE) {
-                    shade_pixel(objects[best_i].pln.color, x, y, img);
+                if (objects[best_o].type == PLANE) {
+                    shade_pixel(objects[best_o].pln.color, i, j, img);
                 }
-                else if (objects[best_i].type == SPHERE) {
+                else if (objects[best_o].type == SPHERE) {
                     //printf("shade\n");
-                    shade_pixel(objects[best_i].sph.color, x, y, img);
+                    shade_pixel(objects[best_o].sph.color, i, j, img);
                 }
             }
             else {
@@ -200,6 +197,10 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
 int main(int argc, char *argv[]) {
     // TODO: error checking for file
     /* testing that we can read json objects */
+    if (argc != 4) {
+        fprintf(stderr, "Error: main: You must have 3 arguments\n");
+        exit(1);
+    }
     FILE *json = fopen(argv[1], "rb");
     read_json(json);
     printf("Printing objects...\n");
@@ -207,7 +208,7 @@ int main(int argc, char *argv[]) {
     image img;
     img.width = atoi(argv[2]);
     img.height = atoi(argv[3]);
-    img.pixmap = malloc(sizeof(RGBPixel)*img.width*img.height);
+    img.pixmap = (RGBPixel*) malloc(sizeof(RGBPixel)*img.width*img.height);
     int pos = get_camera(objects);
     //printf("camera is object %d\n", pos);
     //printf("width: %lf\n", objects[pos].cam.width);
