@@ -36,7 +36,7 @@ void shade_pixel(double *color, int row, int col, image *img) {
     // fill in pixel color values
     //printf("color: %lf %lf %lf\n", color[0], color[1], color[2]);
     // need to flip the y axis due to the placement of the viewplane
-    row = (img->height-1) - row;
+    //row = (img->height-1) - row;
     img->pixmap[row * img->width + col].r = color[0];
     img->pixmap[row * img->width + col].g = color[1];
     img->pixmap[row * img->width + col].b = color[2];
@@ -46,7 +46,7 @@ int plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
     normalize(Norm);
     // determine if plane is parallel to the ray
     double den = v3_dot(Norm, Rd);          // denominator
-    if (den == 0) return -1;                // the plane is parallel
+    if (fabs(den) < 0.0001) return -1;                // the plane is parallel
     //double D = v3_len(Pos);                 // distance from origin to the plane
     //printf("D = %lf\n", D);
     //double num = (v3_dot(Ro, Norm) + D); // numerator
@@ -54,9 +54,10 @@ int plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
     /* this works...*/
     // let's try it harrison's way...
     double vector_diff[3];
-    v3_sub(Pos, Ro, vector_diff);
-    double t = v3_dot(vector_diff, Pos) / den;
+    v3_sub(Ro, Pos, vector_diff);
+    double t = -(v3_dot(vector_diff, Norm) / den);
     /* end */
+    
 
     //double t = num / den;
     //printf("t = %lf\n", t);
@@ -148,15 +149,16 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
     //printf("M: %d\n", M);
     //printf("N: %d\n", N);
 
-    double pixheight = h / M;
-    double pixwidth = w / N;
-    for (y = 0; y < M; y++) {
-        for (x = 0; x < N; x++) {
+    double pixheight = h / img->width;
+    double pixwidth = w / img->height;
+
+    for (x = 0; x < img->width; x++) {
+        for (y = 0; y < img->height; y++) {
             double Ro[3] = {0, 0, 0}; // vector that represents the ray origin
             // Rd = normalize(Pixel - Ro)
             double Rd[3] = {
-                cx - (w/2) + pixwidth * (x + 0.5),
-                cy - (h/2) + pixheight * (y + 0.5),
+                cx - (w/2.0) + pixwidth * (y + 0.5),
+                -(cy - (h/2.0) + pixheight * (x + 0.5)),
                 1
             }; // ray direction
             normalize(Rd);
@@ -166,7 +168,6 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
             for (i=0; objects[i].type != 0; i++) {
                 // we need to run intersection test on each object
                 double t = 0;
-                double *hit;
                 switch(objects[i].type) {
                     case 0:
                         printf("no object found\n");
@@ -195,11 +196,11 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
                 //printf("#");    // ascii ray tracer "hit"
                 //printf("type: %d\n", objects[best_i].type);
                 if (objects[best_i].type == PLANE) {
-                    shade_pixel(objects[best_i].pln.color, y, x, img);
+                    shade_pixel(objects[best_i].pln.color, x, y, img);
                 }
                 else if (objects[best_i].type == SPHERE) {
                     //printf("shade\n");
-                    shade_pixel(objects[best_i].sph.color, y, x, img);
+                    shade_pixel(objects[best_i].sph.color, x, y, img);
                 }
             }
             else {
@@ -219,7 +220,7 @@ int main(int argc, char *argv[]) {
     image img;
     img.width = 800;
     img.height = 800;
-    img.pixmap = malloc(sizeof(double*)*img.width*img.height);
+    img.pixmap = malloc(sizeof(RGBPixel)*img.width*img.height);
     int pos = get_camera(objects);
     printf("camera is object %d\n", pos);
     printf("width: %lf\n", objects[pos].cam.width);
@@ -245,7 +246,7 @@ int main(int argc, char *argv[]) {
     /* raycasting a single object test */
     raycast_scene(&img, objects[pos].cam.width, objects[pos].cam.height, objects);
     FILE *out = fopen("image.ppm", "wb");
-    create_ppm(out, 3, &img);
+    create_ppm(out, 6, &img);
     fclose(out);
     // loop through objects in the scene and do raycasting
     /*int i = 0;
