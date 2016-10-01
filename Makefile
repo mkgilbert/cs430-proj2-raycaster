@@ -1,6 +1,6 @@
 PROG=raycast
 INPUT=json.c raycast.c ppmrw.c
-CFLAGS=-O3 -lm -g
+CFLAGS=-O3 -lm -g -Wall
 
 all:
 	if [ ! -e bin ]; then mkdir bin; fi
