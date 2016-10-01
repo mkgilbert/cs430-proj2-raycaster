@@ -45,23 +45,14 @@ void shade_pixel(double *color, int row, int col, image *img) {
 int plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
     normalize(Norm);
     // determine if plane is parallel to the ray
-    double Vd;
-    double V0;
-    double vector_diff[3];
-    v3_sub(Ro, Pos, vector_diff);
-    Vd = v3_dot(Norm, vector_diff);
-
-    if (fabs(Vd) < 0.0001)
-        return -1;                // the plane is parallel
-
-    V0 = v3_dot(Norm, Rd);
-
-    double t = -(Vd / V0);
-    /* end */
+    double vd = v3_dot(Norm, Rd);
     
+    if (fabs(vd) < 0.0001) return -1;
 
-    //double t = num / den;
-    //printf("t = %lf\n", t);
+    double vector[3];
+    v3_sub(Pos, Ro, vector);
+    double t = v3_dot(vector, Norm) / vd;
+
     // no intersection
     if (t < 0.0)
         return -1;
