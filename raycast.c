@@ -133,15 +133,15 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
     double Ro[3] = {0, 0, 0};       // camera position (ray origin)
     double point[3] = {0, 0, 0};    // point on viewplane where intersection happens
 
-    double pixheight = cam_height / img->width;
-    double pixwidth = cam_width / img->height;
+    double pixheight = cam_height / img->height;
+    double pixwidth = cam_width / img->width;
 
     double Rd[3] = {0, 0, 0};       // direction of Ray
     point[2] = vp_pos[2];    // set intersecting point Z to viewplane Z
 
-    for (x = 0; x < img->width; x++) {
+    for (x = 0; x < img->height; x++) {
         point[1] = -(vp_pos[1] - cam_height/2.0 + pixheight*(x + 0.5));
-        for (y = 0; y < img->height; y++) {
+        for (y = 0; y < img->width; y++) {
             point[0] = vp_pos[0] - cam_width/2.0 + pixwidth*(y + 0.5);
             normalize(point);   // normalize the point
             // store normalized point as our ray direction
