@@ -15,7 +15,6 @@ static inline void normalize(double *v) {
     v[0] /= len;
     v[1] /= len;
     v[2] /= len;
-
 }
 
 /**
@@ -48,14 +47,24 @@ int plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
     // determine if plane is parallel to the ray
     double den = v3_dot(Norm, Rd);          // denominator
     if (den == 0) return -1;                // the plane is parallel
-    double D = v3_len(Pos);                 // distance from origin to the plane
+    //double D = v3_len(Pos);                 // distance from origin to the plane
     //printf("D = %lf\n", D);
-    double num = -1*(v3_dot(Norm, Ro) + D); // numerator
-    double t = num / den;
+    //double num = (v3_dot(Ro, Norm) + D); // numerator
+    
+    /* this works...*/
+    // let's try it harrison's way...
+    double vector_diff[3];
+    v3_sub(Pos, Ro, vector_diff);
+    double t = v3_dot(vector_diff, Pos) / den;
+    /* end */
+
+    //double t = num / den;
     //printf("t = %lf\n", t);
-    if (t >= 0)
-        return t;
-    return -1;
+    // no intersection
+    if (t < 0.0)
+        return -1;
+
+    return t;
 }
 
 double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
@@ -157,6 +166,7 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
             for (i=0; objects[i].type != 0; i++) {
                 // we need to run intersection test on each object
                 double t = 0;
+                double *hit;
                 switch(objects[i].type) {
                     case 0:
                         printf("no object found\n");
@@ -207,8 +217,8 @@ int main(int argc, char *argv[]) {
     read_json(json);
     print_objects(objects);
     image img;
-    img.width = 400;
-    img.height = 400;
+    img.width = 800;
+    img.height = 800;
     img.pixmap = malloc(sizeof(double*)*img.width*img.height);
     int pos = get_camera(objects);
     printf("camera is object %d\n", pos);
