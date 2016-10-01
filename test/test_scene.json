@@ -1,8 +1,8 @@
 [
   {
     "type": "camera",
-    "width": 1,
-    "height": 1
+    "width": 0.5,
+    "height": 0.5
   },
   {
     "type": "sphere",
@@ -12,7 +12,7 @@
   },
   {
     "type": "sphere",
-    "color": [160, 0, 255],
+    "color": [140, 0, 255],
     "position": [1.5, 1.5, 9.5],
     "radius": 0.5
   },
@@ -21,6 +21,18 @@
     "color": [128, 0, 0],
     "position": [1.2, 1.5, 9.4],
     "radius": 0.3
+  },
+  {
+    "type": "plane",
+    "color": [50, 128, 255],
+    "position": [0, 1, 10],
+    "normal": [0, 1, 1]
+  },
+  {
+    "type": "plane",
+    "color": [0, 135, 0],
+    "position": [0, -1, 0],
+    "normal": [0, 1, 0]
   },
   {
     "type": "plane",
