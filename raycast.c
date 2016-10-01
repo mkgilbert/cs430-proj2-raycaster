@@ -42,7 +42,7 @@ void shade_pixel(double *color, int row, int col, image *img) {
     img->pixmap[row * img->width + col].b = color[2];
 }
 
-int plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
+double plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
     normalize(Norm);
     // determine if plane is parallel to the ray
     double vd = v3_dot(Norm, Rd);

@@ -58,6 +58,7 @@ double next_number(FILE* json) {
 
 double* next_vector(FILE* json) {
     double* v = malloc(sizeof(double)*3);
+    skip_ws(json);
     expect_c(json, '[');
     skip_ws(json);
     v[0] = next_number(json);
