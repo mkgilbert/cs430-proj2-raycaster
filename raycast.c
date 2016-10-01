@@ -45,17 +45,18 @@ void shade_pixel(double *color, int row, int col, image *img) {
 int plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
     normalize(Norm);
     // determine if plane is parallel to the ray
-    double den = v3_dot(Norm, Rd);          // denominator
-    if (fabs(den) < 0.0001) return -1;                // the plane is parallel
-    //double D = v3_len(Pos);                 // distance from origin to the plane
-    //printf("D = %lf\n", D);
-    //double num = (v3_dot(Ro, Norm) + D); // numerator
-    
-    /* this works...*/
-    // let's try it harrison's way...
+    double Vd;
+    double V0;
     double vector_diff[3];
     v3_sub(Ro, Pos, vector_diff);
-    double t = -(v3_dot(vector_diff, Norm) / den);
+    Vd = v3_dot(Norm, vector_diff);
+
+    if (fabs(Vd) < 0.0001)
+        return -1;                // the plane is parallel
+
+    V0 = v3_dot(Norm, Rd);
+
+    double t = -(Vd / V0);
     /* end */
     
 
@@ -137,31 +138,25 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
     int x;  // x coord iterator
     int y;  // y coord iterator
     int i;  // object iterator
-    double cx = 0;
-    double cy = 0;
-    double h = cam_height; // these will be set from the camera object
-    double w = cam_width;
-    
-    //printf("h: %lf\n", h);
-    //printf("w: %lf\n", w);
-    int M = img->width; // pixels width and height of image
-    int N = img->height;
-    //printf("M: %d\n", M);
-    //printf("N: %d\n", N);
+    double vp_pos[3] = {0, 0, 1};   // view plane position
+    double Ro[3] = {0, 0, 0};       // camera position (ray origin)
+    double point[3] = {0, 0, 0};    // point on viewplane where intersection happens
 
-    double pixheight = h / img->width;
-    double pixwidth = w / img->height;
+    double pixheight = cam_height / img->width;
+    double pixwidth = cam_width / img->height;
+
+    double Rd[3] = {0, 0, 0};       // direction of Ray
+    point[2] = vp_pos[2];    // set intersecting point Z to viewplane Z
 
     for (x = 0; x < img->width; x++) {
+        point[1] = -(vp_pos[1] - cam_height/2.0 + pixheight*(x + 0.5));
         for (y = 0; y < img->height; y++) {
-            double Ro[3] = {0, 0, 0}; // vector that represents the ray origin
-            // Rd = normalize(Pixel - Ro)
-            double Rd[3] = {
-                cx - (w/2.0) + pixwidth * (y + 0.5),
-                -(cy - (h/2.0) + pixheight * (x + 0.5)),
-                1
-            }; // ray direction
-            normalize(Rd);
+            point[0] = vp_pos[0] - cam_width/2.0 + pixwidth*(y + 0.5);
+            normalize(point);   // normalize the point
+            // store normalized point as our ray direction
+            Rd[0] = point[0];
+            Rd[1] = point[1];
+            Rd[2] = point[2];
 
             int best_i;
             double best_t = INFINITY;
@@ -216,15 +211,16 @@ int main(int argc, char *argv[]) {
     /* testing that we can read json objects */
     FILE *json = fopen(argv[1], "rb");
     read_json(json);
+    printf("Printing objects...\n");
     print_objects(objects);
     image img;
-    img.width = 800;
-    img.height = 800;
+    img.width = atoi(argv[2]);
+    img.height = atoi(argv[3]);
     img.pixmap = malloc(sizeof(RGBPixel)*img.width*img.height);
     int pos = get_camera(objects);
-    printf("camera is object %d\n", pos);
-    printf("width: %lf\n", objects[pos].cam.width);
-    printf("height: %lf\n", objects[pos].cam.height);
+    //printf("camera is object %d\n", pos);
+    //printf("width: %lf\n", objects[pos].cam.width);
+    //printf("height: %lf\n", objects[pos].cam.height);
 
     /* intersection testing */
     /*double Ro[3] = {0, 0, 0};
