@@ -10,7 +10,7 @@ i=0
 for f in parsing_tests/*.json;
 do
     echo "testing $f"
-    ${PROG} $f
+    ${PROG} $f 100 100
     i=$(($i+1))
 done
 echo "finished testing $i files"
