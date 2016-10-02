@@ -8,7 +8,6 @@
 #include "include/raycast.h"
 #include "include/ppmrw.h"
 
-
 static inline void normalize(double *v) {
     double len = sqr(v[0]) + sqr(v[1]) + sqr(v[2]);
     len = sqrt(len);
@@ -34,6 +33,7 @@ int get_camera(object *objects) {
 
 void shade_pixel(double *color, int row, int col, image *img) {
     // fill in pixel color values
+    // the color vals are stored as values between 0 and 1, so we need to adjust
     img->pixmap[row * img->width + col].r = color[0];
     img->pixmap[row * img->width + col].g = color[1];
     img->pixmap[row * img->width + col].b = color[2];

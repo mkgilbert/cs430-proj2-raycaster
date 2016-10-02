@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include "include/json.h"
 
-#define MAX_COLOR_VAL 255
+#define MAX_COLOR_VAL 255       // maximum value to use for colors 0-255
 
 int line = 1;                   // global var for line numbers as we parse
 object objects[MAX_OBJECTS];    // allocate space for all objects in json file
@@ -28,6 +28,7 @@ int next_c(FILE* json) {
     }
     return c;
 }
+
 
 void skip_ws(FILE *json) {
     int c = next_c(json);
@@ -55,6 +56,12 @@ double next_number(FILE* json) {
     }
     printf("next_number: %lf\n", val);
     return val;
+}
+
+int check_color_val(double v) {
+    if (v < 0.0 || v > MAX_COLOR_VAL)
+        return 0;
+    return 1;
 }
 
 double* next_vector(FILE* json) {
@@ -93,6 +100,14 @@ double* next_rgb_color(FILE* json) {
     v[2] = MAX_COLOR_VAL * next_number(json);
     skip_ws(json);
     expect_c(json, ']');
+    // check that all values are valid
+    printf("rgb: %lf %lf %lf\n", v[0], v[1], v[2]);
+    if (!check_color_val(v[0]) || 
+        !check_color_val(v[1]) || 
+        !check_color_val(v[2])) {
+        fprintf(stderr, "Error: next_rgb_color: rgb value out of range: %d\n", line);
+        exit(1);
+    }
     return v;
 }
 
@@ -208,13 +223,29 @@ void read_json(FILE *json) {
                     expect_c(json, ':');
                     skip_ws(json);
                     if (strcmp(key, "width") == 0) {
-                        objects[counter].cam.width = next_number(json);
+                        double temp = next_number(json);
+                        if (temp <= 0) {
+                            fprintf(stderr, "Error: read_json: width must be positive: %d\n", line);
+                            exit(1);
+                        }
+                        objects[counter].cam.width = temp;
+                        
                     }
                     else if (strcmp(key, "height") == 0) {
-                        objects[counter].cam.height = next_number(json);
+                        double temp = next_number(json);
+                        if (temp <= 0) {
+                            fprintf(stderr, "Error: read_json: height must be positive: %d\n", line);
+                            exit(1);
+                        }
+                        objects[counter].cam.height = temp;
                     }
                     else if (strcmp(key, "radius") == 0) {
-                        objects[counter].sph.radius = next_number(json); 
+                        double temp = next_number(json);
+                        if (temp <= 0) {
+                            fprintf(stderr, "Error: read_json: radius must be positive: %d\n", line);
+                            exit(1);
+                        }
+                        objects[counter].sph.radius = temp; 
                     }
                     else if (strcmp(key, "color") == 0) {
                         if (obj_type == SPHERE)
