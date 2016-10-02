@@ -9,8 +9,12 @@
 
 #define MAX_COLOR_VAL 255       // maximum value to use for colors 0-255
 
+/* global variables */
 int line = 1;                   // global var for line numbers as we parse
 object objects[MAX_OBJECTS];    // allocate space for all objects in json file
+
+
+/* helper functions */
 
 // next_c wraps the getc function that provides error checking and line #
 // Problem: if we do ungetc, it could screw us up on the line #
@@ -29,7 +33,7 @@ int next_c(FILE* json) {
     return c;
 }
 
-
+/* skips any white space from current position to next character*/
 void skip_ws(FILE *json) {
     int c = next_c(json);
     while (isspace(c)) {
@@ -40,6 +44,7 @@ void skip_ws(FILE *json) {
     ungetc(c, json);    // move back one character (instead of fseek)
 }
 
+/* checks that the next character is d */
 void expect_c(FILE* json, int d) {
     int c = next_c(json);
     if (c == d) return;
@@ -47,23 +52,26 @@ void expect_c(FILE* json, int d) {
     exit(1);
 }
 
+/* gets the next value from a file - This is *expected* to be a number */
 double next_number(FILE* json) {
     double val;
-    fscanf(json, "%lf", &val);
-    if (val == EOF) {
+    int res = fscanf(json, "%lf", &val);
+    if (res == EOF) {
         fprintf(stderr, "Error: Expected a number but found EOF: %d\n", line);
-        return -1;;
+        exit(1);
     }
     printf("next_number: %lf\n", val);
     return val;
 }
 
+/* since we could use 0-255 or 0-1 or whatever, this function checks bounds */
 int check_color_val(double v) {
     if (v < 0.0 || v > MAX_COLOR_VAL)
         return 0;
     return 1;
 }
 
+/* gets the next 3 values from FILE as vector coordinates */
 double* next_vector(FILE* json) {
     double* v = malloc(sizeof(double)*3);
     skip_ws(json);
@@ -82,8 +90,8 @@ double* next_vector(FILE* json) {
     expect_c(json, ']');
     return v;
 }
-// end
 
+/* Checks that the next 3 values in the FILE are valid rgb numbers */
 double* next_rgb_color(FILE* json) {
     double* v = malloc(sizeof(double)*3);
     skip_ws(json);
@@ -111,6 +119,7 @@ double* next_rgb_color(FILE* json) {
     return v;
 }
 
+/* grabs a string wrapped in quotes from FILE */
 char* parse_string(FILE *json) {
     skip_ws(json);
     int c = next_c(json);
@@ -130,11 +139,16 @@ char* parse_string(FILE *json) {
         c = next_c(json);
     }
     buffer[i] = 0;
-    // gonna need more error checking for invalid strings!!!
-    //
     return strdup(buffer); // returns a malloc'd version of buffer
 }
 
+/**
+ * Reads all scene info from a json file and stores it in the global object
+ * array. This does a lot of work...It checks for specific values and keys in
+ * the file and places the values into the appropriate portion of the current
+ * object.
+ * @param json file handler with ASCII json data
+ */
 void read_json(FILE *json) {
     printf("reading json file...\n");
     //read in data from file
@@ -311,6 +325,7 @@ void read_json(FILE *json) {
     fclose(json);
 }
 
+/* testing/debug functions */
 void print_objects(object *obj) {
     int i = 0;
     while (i < MAX_OBJECTS && obj[i].type > 0) {
@@ -346,20 +361,3 @@ void print_objects(object *obj) {
     }
     printf("end at i=%d\n", i);
 }
-
-/* testing
-int main(int argc, char *argv[]) {
-    // testing code
-    object c;
-    c.type = CAMERA;
-    c.cam.height = 0.5;
-    c.cam.width = 0.4;
-    printf("object type: %d\n", c.type);
-    printf("object height: %lf\n", c.cam.height);
-    printf("object width: %lf\n", c.cam.width);
-
-    FILE *json = fopen(argv[1], "rb");
-    read_json(json);
-    print_objects(objects);
-    return 0;
-}*/

@@ -426,6 +426,12 @@ int write_header(FILE *fh, header *hdr) {
     return ret_val;
 }
 
+/**
+ * Writes image data to a file handler in ppm format (version 3 or 6)
+ * @param fh - file handler to output data to
+ * @param type - only accepts 3 or 6 for ppm3|ppm6 file types
+ * @param img - image data - width, height, pixelmap, etc
+ */
 void create_ppm(FILE *fh, int type, image *img) {
     // error checking
     if (type != 3 && type != 6) {
