@@ -6,7 +6,9 @@
 #include "include/raycast.h"
 
 /**
- * Finds the camera information in a list of scene objects
+ * Finds and gets the index in objects that has the camera width and height
+ * @param objects - array of object types that represent the scene
+ * @return int - non-negative if the object was found, -1 otherwise
  */
 int get_camera(object *objects) {
     int i = 0;
@@ -20,6 +22,13 @@ int get_camera(object *objects) {
     return -1;
 }
 
+/**
+ * colors the values of a pixel based on the color array that is passed in
+ * @param color - array of 3 color values for r,g,b
+ * @param row - which row the pixel is on
+ * @param col - which column the pixel is on
+ * @param img - image struct that allows for indexing the appropriate spot
+ */
 void shade_pixel(double *color, int row, int col, image *img) {
     // fill in pixel color values
     // the color vals are stored as values between 0 and 1, so we need to adjust
@@ -28,6 +37,14 @@ void shade_pixel(double *color, int row, int col, image *img) {
     img->pixmap[row * img->width + col].b = color[2];
 }
 
+/**
+ * Tests for an intersection between a ray and a plane
+ * @param Ro - 3d vector of ray origin
+ * @param Rd - 3d vector of ray direction
+ * @param Pos - 3d vector of the plane's position
+ * @param Norm - 3d vector of the normal to the plane
+ * @return - distance to the object if intersects, otherwise, -1
+ */
 double plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
     normalize(Norm);
     // determine if plane is parallel to the ray
@@ -46,6 +63,14 @@ double plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
     return t;
 }
 
+/**
+ * Tests for an intersection between a ray and a sphere
+ * @param Ro - 3d vector of ray origin
+ * @param Rd - 3d vector of ray direction
+ * @param C - 3d vector of the center of the sphere
+ * @param r - radius of the sphere
+ * @return - distance to the object if intersects, otherwise, -1
+ */
 double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
     double a, b, c;
     // calculate quadratic formula
@@ -103,6 +128,14 @@ double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
     return -1;
 }
 
+/**
+ * Shoots out rays over a viewplane of dimensions stored in img and looks through
+ * the array of objects for an intersection for each pixel.
+ * @param img - image data (width, height, pixmap...)
+ * @param cam_width - camera width
+ * @param cam_height - camera height
+ * @param objects - array of objects in the scene
+ */
 void raycast_scene(image *img, double cam_width, double cam_height, object *objects) {
     // loop over all pixels and test for intesections with objects.
     // store results in pixmap
