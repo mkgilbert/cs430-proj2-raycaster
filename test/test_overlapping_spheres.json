@@ -1,23 +1,22 @@
 [
     {
         "type": "camera",
-        "width": 0.5,
+        "width": 0.7,
         "height": 0.5
     },
 
     {
         "type": "sphere",
         "radius": 5,
-        "color": [255, 255, 0],
+        "color": [1.0, 1.0, 0],
         "position": [0, 10, 40]
     },
 
     {
         "type": "sphere",
         "radius": 3,
-        "color": [0, 255, 0],
+        "color": [0, 1.0, 0],
         "position": [1, 7, 38]
-    },
+    }
 
-    {"type": "sphere", "radius": 2.5, "color": [0, 0, 255], "position": [-2, 3, 30]}
 ]
