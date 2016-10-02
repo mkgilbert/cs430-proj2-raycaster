@@ -98,6 +98,7 @@ double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
     }
     else if (disc == 0) {
         t0 = -1*(b / (2*a)); // single solution
+        return t0;
         //printf("t0 = %lf\n", t0);
     }
     else {  // 2 solutions: find the smaller
@@ -162,7 +163,7 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
             Rd[1] = point[1];
             Rd[2] = point[2];
 
-            int best_o;
+            int best_o = 0;
             double best_t = INFINITY;
             for (o=0; objects[o].type != 0; o++) {
                 // we need to run intersection test on each object
@@ -176,7 +177,6 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
                     case SPHERE:
                         t = sphere_intersect(Ro, Rd, objects[o].sph.position,
                                                         objects[o].sph.radius);
-                        //printf("t = %lf\n", t);
                         break;
                     case PLANE:
                         t = plane_intersect(Ro, Rd, objects[o].pln.position,

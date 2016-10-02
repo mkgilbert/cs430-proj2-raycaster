@@ -60,7 +60,6 @@ double next_number(FILE* json) {
         fprintf(stderr, "Error: Expected a number but found EOF: %d\n", line);
         exit(1);
     }
-    printf("next_number: %lf\n", val);
     return val;
 }
 
@@ -109,7 +108,6 @@ double* next_rgb_color(FILE* json) {
     skip_ws(json);
     expect_c(json, ']');
     // check that all values are valid
-    printf("rgb: %lf %lf %lf\n", v[0], v[1], v[2]);
     if (!check_color_val(v[0]) || 
         !check_color_val(v[1]) || 
         !check_color_val(v[2])) {
@@ -186,7 +184,6 @@ void read_json(FILE *json) {
             return;
         }
         if (c == '{') {     // found an object
-            printf("parsing object...\n");
             skip_ws(json);
             char *key = parse_string(json);
             if (strcmp(key, "type") != 0) {
@@ -200,7 +197,6 @@ void read_json(FILE *json) {
 
             char *type = parse_string(json);
             int obj_type;
-            printf("type is '%s'\n", type);
             if (strcmp(type, "camera") == 0) {
                 printf("found camera...\n");
                 obj_type = CAMERA;
