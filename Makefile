@@ -1,5 +1,5 @@
 PROG=raycast
-INPUT=json.c raycast.c ppmrw.c
+INPUT=main.c json.c raycast.c ppmrw.c
 CFLAGS=-O3 -lm -g -Wall
 
 all:
