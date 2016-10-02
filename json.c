@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include "include/json.h"
 
+#define MAX_COLOR_VAL 255
 
 int line = 1;                   // global var for line numbers as we parse
 object objects[MAX_OBJECTS];    // allocate space for all objects in json file
@@ -76,6 +77,24 @@ double* next_vector(FILE* json) {
 }
 // end
 
+double* next_rgb_color(FILE* json) {
+    double* v = malloc(sizeof(double)*3);
+    skip_ws(json);
+    expect_c(json, '[');
+    skip_ws(json);
+    v[0] = MAX_COLOR_VAL * next_number(json);
+    skip_ws(json);
+    expect_c(json, ',');
+    skip_ws(json);
+    v[1] = MAX_COLOR_VAL * next_number(json);
+    skip_ws(json);
+    expect_c(json, ',');
+    skip_ws(json);
+    v[2] = MAX_COLOR_VAL * next_number(json);
+    skip_ws(json);
+    expect_c(json, ']');
+    return v;
+}
 
 char* parse_string(FILE *json) {
     skip_ws(json);
@@ -199,9 +218,9 @@ void read_json(FILE *json) {
                     }
                     else if (strcmp(key, "color") == 0) {
                         if (obj_type == SPHERE)
-                            objects[counter].sph.color = next_vector(json);
+                            objects[counter].sph.color = next_rgb_color(json);
                         else if (obj_type == PLANE)
-                            objects[counter].pln.color = next_vector(json);
+                            objects[counter].pln.color = next_rgb_color(json);
                         else {
                             fprintf(stderr, "Error: read_json: Color vector can't be applied here: %d\n", line);
                             exit(1);
