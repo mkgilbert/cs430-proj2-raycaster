@@ -41,6 +41,10 @@ int main(int argc, char *argv[]) {
     img.height = atoi(argv[2]);
     img.pixmap = (RGBPixel*) malloc(sizeof(RGBPixel)*img.width*img.height);
     int pos = get_camera(objects);
+    if (pos == -1) {
+        fprintf(stderr, "Error: main: No camera object found in data\n");
+        exit(1);
+    }
 
     /* fill the img->pixmap with colors by raycasting the objects */
     raycast_scene(&img, objects[pos].cam.width, objects[pos].cam.height, objects);

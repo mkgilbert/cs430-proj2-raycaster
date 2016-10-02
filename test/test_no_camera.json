@@ -1,0 +1,8 @@
+[
+    {
+        "type": "sphere",
+        "color": [0, 1, 0],
+        "position": [1, 2, 3],
+        "radius": 2
+    }
+]
