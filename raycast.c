@@ -3,18 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "include/json.h"
-#include "include/vector_math.h"
 #include "include/raycast.h"
-#include "include/ppmrw.h"
-
-static inline void normalize(double *v) {
-    double len = sqr(v[0]) + sqr(v[1]) + sqr(v[2]);
-    len = sqrt(len);
-    v[0] /= len;
-    v[1] /= len;
-    v[2] /= len;
-}
 
 /**
  * Finds the camera information in a list of scene objects
@@ -59,11 +48,6 @@ double plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
 
 double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
     double a, b, c;
-    /*for (int i=0; i<3; i++) {
-        printf("Ro[%d] = %lf\n", i, Ro[i]);
-        printf("Rd[%d] = %lf\n", i, Rd[i]);
-        printf("C[%d] = %lf\n", i, C[i]);
-    }*/
     // calculate quadratic formula
     // First find a, b, c
     a = sqr(Rd[0]) + sqr(Rd[1]) + sqr(Rd[2]);
@@ -97,7 +81,6 @@ double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
         //printf("t0 = %lf\n", t0);
         //printf("t1 = %lf\n", t1);
     }
-
 
     if (t0 < 0 && t1 < 0) {
         // no intersection
@@ -192,54 +175,4 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
         }
         //printf("\n");
     }
-}
-
-int main(int argc, char *argv[]) {
-    // TODO: error checking for file
-    /* testing that we can read json objects */
-    if (argc != 4) {
-        fprintf(stderr, "Error: main: You must have 3 arguments\n");
-        exit(1);
-    }
-    FILE *json = fopen(argv[1], "rb");
-    read_json(json);
-    printf("Printing objects...\n");
-    print_objects(objects);
-    image img;
-    img.width = atoi(argv[2]);
-    img.height = atoi(argv[3]);
-    img.pixmap = (RGBPixel*) malloc(sizeof(RGBPixel)*img.width*img.height);
-    int pos = get_camera(objects);
-    //printf("camera is object %d\n", pos);
-    //printf("width: %lf\n", objects[pos].cam.width);
-    //printf("height: %lf\n", objects[pos].cam.height);
-
-    /* intersection testing */
-    /*double Ro[3] = {0, 0, 0};
-    double Rd[3] = {5, 5, 20};
-    normalize(Rd);
-    double C[3] = {5, 5, 20};
-    double radius = 0.5;*/
-    //double red[3] = {255, 1, 25};
-
-    //sphere_intersect(Ro, Rd, C, radius);
-    /* shade_pixel test */
-    /*for (int i=0; i<100; i++) {
-        for (int j=0; j<100; j++) {
-            shade_pixel(red, i, j, &img);
-        }
-    }
-    print_pixels(img.pixmap, 100, 100);*/
-
-    /* raycasting a single object test */
-    raycast_scene(&img, objects[pos].cam.width, objects[pos].cam.height, objects);
-    FILE *out = fopen("image.ppm", "wb");
-    create_ppm(out, 6, &img);
-    fclose(out);
-    // loop through objects in the scene and do raycasting
-    /*int i = 0;
-    while (i < MAX_OBJECTS && strlen(objects[i].type) > 0) {
-        ;
-    }*/
-    return 0;
 }

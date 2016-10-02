@@ -1,27 +1,28 @@
 /* 3d vector math, with some other basic math thrown in */
-#ifndef VECTORMATH_H
-#define VECTORMATH_H
+#ifndef VECTOR_MATH_H
+#define VECTOR_MATH_H
 #endif
 
-#ifdef VECTORMATH_H
+#ifdef VECTOR_MATH_H
 
-// way to represent vectors in memory?
-// diff between float and double --> 32 vs 64 bits
-// use doubles!
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-typedef double V3[3]; // array of double values to represent 
 
+typedef double V3[3];   // represents a 3d vector
 
-// inline says don't compile to a function somewhere in the program, just do
-// this op whenever you see it (gives performance savings)
-// C may not inline this, it might put it into the library to use. static tells
-// it to put the function in a local namespace
 
 static inline double sqr(double v) {
     return v*v;
+}
+
+static inline void normalize(double *v) {
+    double len = sqr(v[0]) + sqr(v[1]) + sqr(v[2]);
+    len = sqrt(len);
+    v[0] /= len;
+    v[1] /= len;
+    v[2] /= len;
 }
 
 static inline double v3_len(V3 a) {
@@ -56,18 +57,10 @@ static inline void v3_cross(V3 a, V3 b, V3 c) {
     c[2] = a[0]*b[1] - a[1]*b[0];
 }
 
-void print_v3(V3 data){
-    printf("V3: (%lf, %lf, %lf)\n", data[0], data[1], data[2]);
-}
 
-void example() {
-    double data1[] = {1.0, 2.0, 3.0};
-    double data2[] = {4.0, 5.0, 6.0};
-    double result[3];
-    v3_cross(data1, data2, result);
-    print_v3(result);
-    double x = v3_dot(data1, data2);
-    printf("dot: %lf\n", x);
-}
+/* testing/debug functions */
+//void print_v3(V3 data){
+//    printf("V3: (%lf, %lf, %lf)\n", data[0], data[1], data[2]);
+//}
 
 #endif
