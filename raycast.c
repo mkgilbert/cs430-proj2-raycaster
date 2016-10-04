@@ -116,10 +116,6 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
 
     double pixheight = (double)cam_height / (double)img->height;
     double pixwidth = (double)cam_width / (double)img->width;
-    printf("pixw = %lf\n", pixheight);
-    printf("pixh = %lf\n", pixwidth);
-    printf("camw = %lf\n", cam_height);
-    printf("camh = %lf\n", cam_width);
     double Rd[3] = {0, 0, 0};       // direction of Ray
 
     for (i = 0; i < img->height; i++) {

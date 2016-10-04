@@ -148,7 +148,6 @@ char* parse_string(FILE *json) {
  * @param json file handler with ASCII json data
  */
 void read_json(FILE *json) {
-    printf("reading json file...\n");
     //read in data from file
     // expecting square bracket but we need to get rid of whitespace
     skip_ws(json);
@@ -198,17 +197,14 @@ void read_json(FILE *json) {
             char *type = parse_string(json);
             int obj_type;
             if (strcmp(type, "camera") == 0) {
-                printf("found camera...\n");
                 obj_type = CAMERA;
                 objects[counter].type = CAMERA;
             }
             else if (strcmp(type, "sphere") == 0) {
-                printf("found sphere...\n");
                 obj_type = SPHERE;
                 objects[counter].type = SPHERE;
             }
             else if (strcmp(type, "plane") == 0) {
-                printf("found plane...\n"); 
                 obj_type = PLANE;
                 objects[counter].type = PLANE;
             }
@@ -306,7 +302,6 @@ void read_json(FILE *json) {
                 skip_ws(json);
             }
             else if (c == ']') {
-                printf("end of file\n");
                 fclose(json);
                 return;
             }
