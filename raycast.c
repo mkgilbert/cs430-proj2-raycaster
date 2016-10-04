@@ -72,61 +72,28 @@ double plane_intersect(double *Ro, double *Rd, double *Pos, double *Norm) {
  * @return - distance to the object if intersects, otherwise, -1
  */
 double sphere_intersect(double *Ro, double *Rd, double *C, double r) {
-    double a, b, c;
-    // calculate quadratic formula
-    // First find a, b, c
-    a = sqr(Rd[0]) + sqr(Rd[1]) + sqr(Rd[2]);
-    //printf("value of a: %lf\n", a);
-    b = 2 * (Rd[0]*(Ro[0]-C[0]) + Rd[1]*(Ro[1]-C[1]) + Rd[2]*(Ro[2]-C[2]));
-    //printf("value of b: %lf\n", b);
-    c = sqr(Ro[0]-C[0]) + sqr(Ro[1]-C[1]) + sqr(Ro[2]-C[2]) - sqr(r);
-    //printf("value of c: %lf\n", c);
+    double b, c;
+    double vector_diff[3];
+    v3_sub(Ro, C, vector_diff);
 
-    // make sure a is 1 (means the ray direction was normalized)
-    if (a > 1.0001 || a < .9999) {
-        printf("a = %lf\n", a);
-        fprintf(stderr, "Ray direction was not normalized\n");
-        exit(1);
-    }
-    
+    // calculate quadratic formula
+    b = 2 * (Rd[0]*vector_diff[0] + Rd[1]*vector_diff[1] + Rd[2]*vector_diff[2]);
+    c = sqr(vector_diff[0]) + sqr(vector_diff[1]) + sqr(vector_diff[2]) - sqr(r);
+
     // check that discriminant is <, =, or > 0
-    double disc = sqr(b) - 4*a*c;
-    double t0, t1;  // solutions
+    double disc = sqr(b) - 4*c;
+    double t;  // solutions
     if (disc < 0) {
-        //printf("disc was < 0\n");
         return -1; // no solution
     }
-    else if (disc == 0) {
-        t0 = -1*(b / (2*a)); // single solution
-        return t0;
-        //printf("t0 = %lf\n", t0);
-    }
-    else {  // 2 solutions: find the smaller
-        t0 = (-1*b - sqrt(sqr(b) - 4*c))/2;
-        t1 = (-1*b + sqrt(sqr(b) - 4*c))/2;
-        //printf("t0 = %lf\n", t0);
-        //printf("t1 = %lf\n", t1);
-    }
+    disc = sqrt(disc);
+    t = (-b - disc) / 2.0;
+    if (t < 0.0)
+        t = (-b + disc) / 2.0;
 
-    if (t0 < 0 && t1 < 0) {
-        // no intersection
+    if (t < 0.0)
         return -1;
-    }
-    else if (t0 < 0 && t1 > 0) {
-        return t1;
-    }
-    else if (t0 > 0 && t1 < 0) {
-        return t0;
-    }
-    else { // they were both positive
-        if (t0 <= t1)
-            return t0;
-        else
-            return t1;
-    }
-    //printf("value of t0: %lf\n", t0);
-    //printf("value of t1: %lf\n", t1);
-    return -1;
+    return t;
 }
 
 /**
@@ -147,9 +114,12 @@ void raycast_scene(image *img, double cam_width, double cam_height, object *obje
     double Ro[3] = {0, 0, 0};       // camera position (ray origin)
     double point[3] = {0, 0, 0};    // point on viewplane where intersection happens
 
-    double pixheight = cam_height / img->height;
-    double pixwidth = cam_width / img->width;
-
+    double pixheight = (double)cam_height / (double)img->height;
+    double pixwidth = (double)cam_width / (double)img->width;
+    printf("pixw = %lf\n", pixheight);
+    printf("pixh = %lf\n", pixwidth);
+    printf("camw = %lf\n", cam_height);
+    printf("camh = %lf\n", cam_width);
     double Rd[3] = {0, 0, 0};       // direction of Ray
     point[2] = vp_pos[2];    // set intersecting point Z to viewplane Z
 
