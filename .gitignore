@@ -3,3 +3,4 @@ ppmrw
 *.ppm
 .*.swp
 *.pdf
+.DS_Store
